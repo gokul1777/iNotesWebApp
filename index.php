@@ -2,6 +2,8 @@
 // INSERT INTO `notes` (`sno`, `title`, `description`, `tstamp`) VALUES (NULL, 'Buy Books', 'Please buy Books from store', current_timestamp());
 //Connecting to a Database
 $insert = false;
+$update = false;
+$delete = false;
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -15,7 +17,12 @@ if (!$conn){
     die("Sorry we failed to connect:". mysqli_connect_error());
 }
 
-// exit();
+if(isset($_GET['delete'])){
+  $sno = $_GET['delete'];
+  $delete = true;
+  $sql = "DELETE FROM `notes` WHERE `sno` = $sno";
+  $result = mysqli_query($conn, $sql);
+}
 if($_SERVER['REQUEST_METHOD']=='POST'){
   if(isset($_POST['snoEdit'])){
     // Update the Record
@@ -27,7 +34,7 @@ if($_SERVER['REQUEST_METHOD']=='POST'){
   $sql = "UPDATE `notes` SET `title` = '$title' , `description` = '$description' WHERE `notes`.`sno` = $sno";
   $result = mysqli_query($conn, $sql);
   if($result){
-    echo "We updated the record successfully";
+    $update = true;
 }
 else{
     echo "We could not update the record successfully";
@@ -41,7 +48,6 @@ else{
   $sql = "INSERT INTO `notes` (`title`,`description`) VALUES ('$title', '$description')";
   $result = mysqli_query($conn, $sql);
   
-  // Add a new trip to the Trip table in the database
   
   if($result){
       // echo "The record has been inserrted successfully <br>";
@@ -69,10 +75,7 @@ else{
     
   </head>
   <body>
-    <!-- Edit modal -->
-<!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editModal">
-  Edit Modal
-</button> -->
+    
 
 <!-- Edit Modal -->
 <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
@@ -84,8 +87,8 @@ else{
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <div class="modal-body">
       <form action="/crud/index.php" method="post">
+      <div class="modal-body">
         <input type="hidden" name="snoEdit" id = "snoEdit">
   <div class="form-group">
     <label for="title">Note Title</label>
@@ -95,18 +98,17 @@ else{
     <label for="desc">Note Description</label>
     <textarea class="form-control" id="descriptionEdit" name="descriptionEdit" rows="3"></textarea>
   </div>
-  <button type="submit" class="btn btn-primary">Update Note</button>
+</div>
+<div class="modal-footer d-block mr-auto">
+  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+  <button type="submit" class="btn btn-primary">Save changes</button>
+</div>
 </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
-      </div>
     </div>
   </div>
 </div>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <a class="navbar-brand" href="#">iNotes</a>
+  <a class="navbar-brand" href="#"><img src="/crud/logo.png" height="28px" alt=""></a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -140,8 +142,28 @@ if($insert){
 </div>";
 }
 ?>
+<?php
+if($delete){
+  echo "<div class='alert alert-success alert-dismissible fade show' role='alert'>
+  <strong>Success!</strong> Your note has been deleted successfully
+  <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
+    <span aria-hidden='true'>&times;</span>
+  </button>
+</div>";
+}
+?>
+<?php
+if($update){
+  echo "<div class='alert alert-success alert-dismissible fade show' role='alert'>
+  <strong>Success!</strong> Your notes has been updated successfully
+  <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
+    <span aria-hidden='true'>&times;</span>
+  </button>
+</div>";
+}
+?>
 <div class="container my-4">
-    <h2>Add a Note</h2>
+    <h2>Add a Note to iNotes</h2>
     <form action="/crud/index.php" method="post">
   <div class="form-group">
     <label for="title">Note Title</label>
@@ -178,7 +200,7 @@ while($row = mysqli_fetch_assoc($result)){
   <th scope='row'>". $sno . "</th>
   <td>". $row['title'] . "</td>
   <td>". $row['description'] . "</td>
-  <td> <button class='edit btn btn-sm btn-primary' id = ".$row['sno'].">Edit</button> <a href='/del'>Delete</a></td>
+  <td> <button class='edit btn btn-sm btn-primary' id = ".$row['sno'].">Edit</button> <button class='delete btn btn-sm btn-primary' id = d".$row['sno'].">Delete</button></td>
 </tr>";
   }
   
@@ -213,6 +235,23 @@ element.addEventListener("click",(e)=>{
   snoEdit.value = e.target.id;
   console.log(e.target.id);
   $('#editModal').modal('toggle');
+})
+      })
+
+      deletes = document.getElementsByClassName('delete');
+      Array.from(deletes).forEach((element)=>{
+element.addEventListener("click",(e)=>{
+  console.log("edit", );
+  sno = e.target.id.substr(1,);
+  
+  if(confirm("Are you sure you want to delete this note!")){
+    console.log("yes");
+    window.location = `/crud/index.php?delete=${sno}`;
+    //Create a form and Use post request to submit a form
+  }else{
+    console.log("no");
+  }
+  
 })
       })
     </script>
